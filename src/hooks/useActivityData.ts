@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { collection, query, where, orderBy, limit, onSnapshot, Timestamp } from 'firebase/firestore';
-import { db } from '../config/firebase';
+import { db, hasFirebaseConfig } from '../config/firebase';
 import { ActivityData, SessionData, UserStats } from '../types/activity';
 
 export const useActivityData = (userId: string | null) => {
@@ -9,8 +9,13 @@ export const useActivityData = (userId: string | null) => {
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // If Firebase is not configured, return empty state
+  if (!hasFirebaseConfig || !db) {
+    return { activities: [], sessions: [], userStats: null, loading: false };
+  }
+
   useEffect(() => {
-    if (!userId) {
+    if (!userId || !db) {
       setActivities([]);
       setSessions([]);
       setUserStats(null);

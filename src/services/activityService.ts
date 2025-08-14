@@ -1,10 +1,15 @@
 import { db } from '../config/firebase';
 import { collection, addDoc, serverTimestamp, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { ActivityData, SessionData } from '../types/activity';
+import { hasFirebaseConfig } from '../config/firebase';
 
 export class ActivityService {
   // Send activity data from VS Code extension
   static async sendActivity(activityData: Omit<ActivityData, 'timestamp'>): Promise<string> {
+    if (!hasFirebaseConfig || !db) {
+      throw new Error('Firebase not configured');
+    }
+    
     try {
       const docRef = await addDoc(collection(db, 'activities'), {
         ...activityData,
@@ -21,6 +26,10 @@ export class ActivityService {
   
   // Get recent activities for a user
   static async getRecentActivities(userId: string, limitCount: number = 50): Promise<ActivityData[]> {
+    if (!hasFirebaseConfig || !db) {
+      return [];
+    }
+    
     try {
       const q = query(
         collection(db, 'activities'),
@@ -42,6 +51,10 @@ export class ActivityService {
   
   // Get sessions for a user
   static async getUserSessions(userId: string, limitCount: number = 20): Promise<SessionData[]> {
+    if (!hasFirebaseConfig || !db) {
+      return [];
+    }
+    
     try {
       const q = query(
         collection(db, 'sessions'),
@@ -63,6 +76,10 @@ export class ActivityService {
   
   // Simulate VS Code extension activity (for testing)
   static async simulateActivity(userId: string, projectName: string): Promise<void> {
+    if (!hasFirebaseConfig || !db) {
+      throw new Error('Firebase not configured');
+    }
+    
     const activities = [
       {
         userId,
